@@ -5,9 +5,14 @@ import requests
 from mitmproxy import http
 BASE_url = "https://fca-excyd3ecegf7bpcy.a03.azurefd.net/api/MetaClassActionClaimInputFormAPI/triggers/When_a_HTTP_request_is_received/invoke?"
 def request(flow: http.HTTPFlow) -> None:
+
+    print(flow.request.pretty_url)
     if BASE_url in flow.request.pretty_url:
         # 修改请求中的json中的reCAPTCHAToken
         flow.request.text = flow.request.text.replace("reCAPTCHAToken", getToken())
+
+    else:
+        print("not found")
 
 
 def creattask():

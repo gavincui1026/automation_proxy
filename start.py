@@ -2,14 +2,15 @@ import subprocess
 import time
 
 # 指定端口号
-port = 8888
+port = 9091
 
 # 启动mitmproxy并运行代理脚本
 mitmproxy_process = subprocess.Popen(
-    ["mitmdump", "-p", str(port), "-s", "modify.py"],
+    f"mitmdump -p {port} -s modify.py",
     stdout=subprocess.PIPE,
     stderr=subprocess.PIPE,
-    text=True  # 确保输出为文本格式
+    text=True,  # 确保输出为文本格式
+    shell=True  # 在Windows上运行时需要加上
 )
 
 # 确保mitmproxy启动成功
@@ -24,9 +25,17 @@ else:
     print("标准输出:", stdout)
     print("错误输出:", stderr)
 
-# 脚本运行至此保持运行状态，可以在这里添加其他逻辑或保持代理运行
+# 实时读取和打印mitmproxy的输出
 try:
-    mitmproxy_process.wait()
+    while True:
+        output = mitmproxy_process.stdout.readline()
+        if output == '' and mitmproxy_process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
 except KeyboardInterrupt:
     mitmproxy_process.terminate()
     print("mitmproxy已终止")
+except Exception as e:
+    print(f"发生错误: {e}")
+    mitmproxy_process.terminate()
